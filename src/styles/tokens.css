@@ -1,0 +1,85 @@
+/**
+ * Tokens del sidebar. Impórtalo una vez en el layout raíz del consumidor:
+ *
+ *   import '@mataqque/sidebar/styles.css';
+ *
+ * Todos los componentes leen estas variables vía utilidades arbitrarias de
+ * Tailwind (`bg-[var(--sb-surface)]`), así que retematizar es redefinir variables
+ * —en `:root`, en un contenedor o por instancia con la prop `theme`— sin forkear
+ * ni sobrescribir clases.
+ */
+
+:root {
+	/* Geometría */
+	--sb-width: 20rem;
+	--sb-width-collapsed: 4rem;
+	--sb-item-height: 3rem;
+	--sb-radius: 0.5rem;
+	--sb-duration: 300ms;
+
+	/* Superficies */
+	--sb-surface: #ffffff;
+	--sb-border: #f3f4f6;
+	--sb-separator: #f3f4f6;
+	--sb-hover: rgb(88 28 135 / 0.05);
+
+	/* Acento (item activo, indicador lateral) */
+	--sb-accent: #ec4899;
+	--sb-accent-fg: #ec4899;
+	--sb-active-bg: rgb(88 28 135 / 0.05);
+
+	/* Texto */
+	--sb-fg: #374151;
+	--sb-fg-muted: #9ca3af;
+	--sb-fg-subtle: #9ca3af;
+
+	/* Flyout (grupo abierto en modo colapsado) */
+	--sb-flyout-surface: #ffffff;
+	--sb-flyout-border: #e5e7eb;
+	--sb-flyout-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+	/* Badges */
+	--sb-badge-primary: #3b82f6;
+	--sb-badge-danger: #ec4899;
+	--sb-badge-success: #22c55e;
+	--sb-badge-warning: #eab308;
+	--sb-badge-neutral: #6b7280;
+	--sb-badge-fg: #ffffff;
+
+	/* Scrollbar propio */
+	--sb-scroll-track: rgb(229 231 235 / 0.5);
+	--sb-scroll-thumb: rgb(156 163 175 / 0.7);
+	--sb-scroll-thumb-active: #6b7280;
+}
+
+/* Soporta la estrategia de clase (`next-themes` con `attribute="class"`) y la de atributo. */
+.dark,
+[data-theme='dark'] {
+	--sb-surface: #111827;
+	--sb-border: #1f2937;
+	--sb-separator: rgb(255 255 255 / 0.1);
+	--sb-hover: rgb(31 41 55 / 0.5);
+
+	--sb-accent: #ec4899;
+	--sb-accent-fg: #f472b6;
+	--sb-active-bg: rgb(31 41 55 / 0.5);
+
+	--sb-fg: #ffffff;
+	--sb-fg-muted: #9ca3af;
+	--sb-fg-subtle: #6b7280;
+
+	--sb-flyout-surface: #111827;
+	--sb-flyout-border: #374151;
+	--sb-flyout-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.4);
+
+	--sb-scroll-track: rgb(55 65 81 / 0.5);
+	--sb-scroll-thumb: rgb(107 114 128 / 0.7);
+	--sb-scroll-thumb-active: #9ca3af;
+}
+
+/* Respeta la preferencia del sistema: sin transiciones para quien pide menos movimiento. */
+@media (prefers-reduced-motion: reduce) {
+	:root {
+		--sb-duration: 0ms;
+	}
+}
