@@ -1,0 +1,10 @@
+# Solo se publica la fuente: el consumidor la transpila.
+# `node_modules` DEBE quedar fuera: arrastrar las devDependencies metería una
+# segunda copia de React en el árbol del consumidor ("Invalid hook call").
+node_modules/
+package-lock.json
+yarn.lock
+.git/
+tsconfig.json
+dist/
+*.tsbuildinfo
