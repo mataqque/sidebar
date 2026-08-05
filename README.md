@@ -7,7 +7,7 @@ Sidebar de dashboard para React 18/19. Menú declarativo por **contribuciones** 
 Se distribuye como dependencia git y **se transpila desde el consumidor** (no hay paso de build ni `dist/`).
 
 ```bash
-npm i "@mataqque/sidebar@github:mataqque/sidebar-ui#v0.1.0"
+npm i "@mataqque/sidebar@github:mataqque/sidebar#v0.1.0"
 ```
 
 ### 1. Transpilar el paquete (Next)
