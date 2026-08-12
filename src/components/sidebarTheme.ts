@@ -11,6 +11,7 @@ export type SidebarThemeToken =
 	| 'itemHeight'
 	| 'radius'
 	| 'duration'
+	| 'scrim'
 	| 'surface'
 	| 'border'
 	| 'separator'
@@ -31,6 +32,7 @@ const TOKEN_VARS: Record<SidebarThemeToken, string> = {
 	itemHeight: '--sb-item-height',
 	radius: '--sb-radius',
 	duration: '--sb-duration',
+	scrim: '--sb-scrim',
 	surface: '--sb-surface',
 	border: '--sb-border',
 	separator: '--sb-separator',

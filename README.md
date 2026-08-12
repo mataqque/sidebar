@@ -42,7 +42,7 @@ import '@mataqque/sidebar/styles.css';
 ```tsx
 'use client';
 
-import { Sidebar, SidebarProvider, buildSidebarMenu } from '@mataqque/sidebar';
+import { Sidebar, SidebarProvider, SidebarTrigger, buildSidebarMenu } from '@mataqque/sidebar';
 import { nextNavigationAdapter } from '@mataqque/sidebar/next';
 
 const items = buildSidebarMenu(coreMenu);
@@ -50,14 +50,41 @@ const items = buildSidebarMenu(coreMenu);
 export function Shell({ children }: { children: React.ReactNode }) {
 	return (
 		<SidebarProvider navigation={nextNavigationAdapter} persistKey='sidebar:collapsed'>
-			<div className='flex h-screen'>
+			<div className='flex min-h-[100dvh]'>
 				<Sidebar items={items} logo={<Logo />} profile={<MyProfile />} footer={<MyFooter />} />
-				<main className='flex-1 overflow-auto'>{children}</main>
+				<div className='flex min-w-0 flex-1 flex-col'>
+					<header className='flex items-center gap-2'>
+						{/* Sin esto el cajón es inalcanzable en móvil. Se oculta solo en `lg`. */}
+						<SidebarTrigger />
+					</header>
+					<main className='flex-1'>{children}</main>
+				</div>
 			</div>
 		</SidebarProvider>
 	);
 }
 ```
+
+## Móvil: columna arriba, cajón abajo
+
+Por encima de `lg` el sidebar es una **columna** que ocupa su ancho y empuja al contenido. Por debajo es un **cajón** que sale sobre la página con un velo y se retira al elegir destino.
+
+No es la misma pieza encogida, y por eso no basta con un `w-` responsive: un sidebar de `20rem` en un teléfono de 390px deja 70px para trabajar. A esos anchos la única versión útil es la que no está ahí hasta que se pide.
+
+**Lo que trae de serie:** velo que cierra al tocarlo, `Escape`, cierre automático al navegar, bloqueo del scroll del cuerpo mientras está abierto, y el panel fuera del recorrido de tabulación cuando está cerrado. El colapso se ignora en cajón — una tira de iconos flotando sobre el contenido no sirve para navegar ni deja ver lo que tapa.
+
+**Dos piezas que tienes que poner tú:**
+
+1. **`<SidebarTrigger />`** en tu cabecera. Sin él no hay forma de abrirlo. Se oculta solo a partir de `lg`.
+2. **`mobileBreakpoint`** si has redefinido `screens` en Tailwind:
+
+```tsx
+<SidebarProvider mobileBreakpoint={1100} …>
+```
+
+La presentación la resuelve el CSS con clases `lg:`, que **compila tu Tailwind, no la librería** — así el corte sigue tu escala. Pero el comportamiento (cerrar al navegar, Escape, scroll) necesita el número en JavaScript. Si los dos no coinciden hay una franja de anchos donde el cajón se ve pero no se comporta como tal. El valor por defecto es `1024`, el `lg` de Tailwind sin tocar.
+
+Que el CSS mande y no JavaScript es deliberado: el servidor no conoce el ancho de la pantalla, así que decidir el layout en JS daría un desajuste de hidratación y un parpadeo en el primer paint.
 
 ## Modelo de menú
 

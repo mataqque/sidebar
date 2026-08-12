@@ -9,6 +9,22 @@ export interface SidebarContextValue {
 	isCollapsed: boolean;
 	setCollapsed: (collapsed: boolean) => void;
 	toggleCollapsed: () => void;
+	/**
+	 * `true` = el cajón está desplegado sobre el contenido, en pantallas estrechas.
+	 *
+	 * **No es lo mismo que «no colapsado».** Colapsado es una preferencia de
+	 * escritorio —enseñar solo los iconos para recuperar ancho— y se recuerda entre
+	 * visitas. Abierto es un estado momentáneo de móvil: el menú tapa la página y
+	 * se cierra en cuanto se elige algo. Mezclarlos daría el peor de los dos
+	 * mundos: una tira de iconos flotando encima del contenido, que no sirve para
+	 * navegar ni deja ver lo que hay debajo.
+	 *
+	 * Por encima del breakpoint este valor no pinta nada: el sidebar está siempre
+	 * presente y el CSS lo ignora.
+	 */
+	isOpen: boolean;
+	setOpen: (open: boolean) => void;
+	toggleOpen: () => void;
 	/** Ruta actual resuelta por el adaptador; `null` mientras se desconoce (SSR). */
 	currentPath: string | null;
 	navigation: NavigationAdapter;

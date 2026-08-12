@@ -30,6 +30,8 @@ export interface SidebarProps {
 	menuLabel?: string;
 	/** Se invoca al activar un item de menú sin `href`. */
 	onSelect?: (item: MenuItem) => void;
+	/** Etiqueta del velo que cierra el cajón. */
+	scrimLabel?: string;
 }
 
 /**
@@ -44,10 +46,40 @@ export interface SidebarProps {
  * contenido inyectado pueda reaccionar al colapso solo con clases:
  * `group-data-[state=expanded]/sidebar:flex`.
  *
+ * ## Dos formas, no una encogida
+ *
+ * Por encima de `lg` es una **columna**: ocupa su ancho y empuja al contenido.
+ * Por debajo es un **cajón**: sale por encima de la página sobre un velo y se
+ * retira al elegir destino. No es la misma cosa más estrecha — un sidebar de
+ * 20rem en un teléfono de 390px deja 70px para trabajar, así que a esos anchos la
+ * única versión útil es la que no está ahí hasta que se pide.
+ *
+ * El colapso se ignora por debajo de `lg`: una tira de iconos flotando sobre el
+ * contenido no sirve para navegar ni deja ver lo que tapa.
+ *
+ * **Quién enseña qué lo decide el CSS, no JavaScript.** Así el primer paint ya es
+ * correcto y no hay desajuste de hidratación: el servidor no conoce el ancho de
+ * la pantalla. El `lg:` lo compila el Tailwind del consumidor, de modo que el
+ * corte sigue su escala; dile a `<SidebarProvider mobileBreakpoint>` cuál es ese
+ * número para que el comportamiento vaya a la par.
+ *
  * Precondición: se renderiza dentro de un `<SidebarProvider>`.
  */
-export function Sidebar({ items, logo, header, profile, children, footer, theme, className, label = 'Menú lateral', menuLabel, onSelect }: SidebarProps) {
-	const { isCollapsed } = useSidebar();
+export function Sidebar({
+	items,
+	logo,
+	header,
+	profile,
+	children,
+	footer,
+	theme,
+	className,
+	label = 'Menú lateral',
+	menuLabel,
+	onSelect,
+	scrimLabel = 'Cerrar el menú',
+}: SidebarProps) {
+	const { isCollapsed, isOpen, setOpen } = useSidebar();
 
 	// Solo se separan los bloques presentes: un sidebar sin perfil no debe mostrar
 	// dos filetes pegados donde debería haber uno.
@@ -60,26 +92,58 @@ export function Sidebar({ items, logo, header, profile, children, footer, theme,
 	].filter((section): section is ReactNode => section !== undefined && section !== null && section !== false);
 
 	return (
-		<aside
-			aria-label={label}
-			data-state={isCollapsed ? 'collapsed' : 'expanded'}
-			style={themeToStyle(theme)}
-			className={cn(
-				'group/sidebar relative left-0 top-0 z-40 h-screen shrink-0 overflow-hidden',
-				'border-r border-[color:var(--sb-border)] bg-[var(--sb-surface)]',
-				'transition-[width] duration-[var(--sb-duration)]',
-				isCollapsed ? 'w-[var(--sb-width-collapsed)]' : 'w-[var(--sb-width)]',
-				className
-			)}
-		>
-			<div className='flex h-full w-full flex-col'>
-				{sections.map((section, index) => (
-					<Fragment key={index}>
-						{index > 0 && <SidebarSeparator />}
-						{section}
-					</Fragment>
-				))}
-			</div>
-		</aside>
+		<>
+			{/*
+			 * Velo. Cierra el cajón al tocarlo —el gesto que espera cualquiera con un
+			 * panel abierto— y separa visualmente lo que está activo de lo que no.
+			 *
+			 * Sigue montado con el cajón cerrado, animando solo `opacity`: quitarlo del
+			 * árbol haría que apareciese de golpe en vez de fundirse. `pointer-events-none`
+			 * es lo que impide que intercepte toques cuando es invisible.
+			 */}
+			<div
+				role='presentation'
+				aria-label={scrimLabel}
+				onClick={() => setOpen(false)}
+				className={cn(
+					'fixed inset-0 z-40 bg-[var(--sb-scrim)] transition-opacity duration-[var(--sb-duration)] lg:hidden',
+					isOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
+				)}
+			/>
+
+			<aside
+				aria-label={label}
+				data-state={isCollapsed ? 'collapsed' : 'expanded'}
+				data-open={isOpen ? 'true' : 'false'}
+				style={themeToStyle(theme)}
+				className={cn(
+					'group/sidebar fixed inset-y-0 left-0 z-50 overflow-hidden',
+					'border-r border-[color:var(--sb-border)] bg-[var(--sb-surface)]',
+					'transition-[width,transform,visibility] duration-[var(--sb-duration)] ease-out',
+					// Ancho: en cajón siempre completo, y acotado para que en una pantalla
+					// estrecha quede a la vista un margen de la página de detrás — la
+					// señal de que esto se cierra.
+					'w-[var(--sb-width)] max-w-[85vw] lg:max-w-none',
+					// `invisible` y no solo el desplazamiento: un panel fuera de pantalla
+					// pero visible sigue en el recorrido de tabulación, y se acabaría
+					// navegando a ciegas por un menú que nadie ve.
+					isOpen ? 'visible translate-x-0' : 'invisible -translate-x-full',
+					// A partir de `lg` vuelve a ser columna: sin desplazamiento, en flujo,
+					// y ahí sí manda el colapso.
+					'lg:visible lg:relative lg:z-40 lg:h-[100dvh] lg:translate-x-0',
+					isCollapsed ? 'lg:w-[var(--sb-width-collapsed)]' : 'lg:w-[var(--sb-width)]',
+					className
+				)}
+			>
+				<div className='flex h-full w-full flex-col'>
+					{sections.map((section, index) => (
+						<Fragment key={index}>
+							{index > 0 && <SidebarSeparator />}
+							{section}
+						</Fragment>
+					))}
+				</div>
+			</aside>
+		</>
 	);
 }
