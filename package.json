@@ -1,6 +1,6 @@
 {
 	"name": "@mataqque/sidebar",
-	"version": "0.1.0",
+	"version": "0.2.1",
 	"description": "Sidebar de dashboard para React/Next: menú por contribuciones (core + plugins), colapsable con flyout y theming por tokens CSS.",
 	"license": "MIT",
 	"repository": {
