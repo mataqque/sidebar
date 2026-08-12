@@ -38,8 +38,7 @@ export function SidebarHeader({ logo, className, collapseLabel = 'Colapsar menú
 				aria-label={isCollapsed ? expandLabel : collapseLabel}
 				aria-expanded={!isCollapsed}
 				className={cn(
-					'flex items-center justify-center rounded-[var(--sb-radius)] p-1 text-[color:var(--sb-fg-muted)] transition-colors hover:bg-[var(--sb-hover)] hover:text-[color:var(--sb-fg)]',
-					'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--sb-accent)]',
+					'flex items-center justify-center rounded-[var(--sb-radius)] p-1 text-[color:var(--sb-fg-muted)] outline-none transition-colors hover:bg-[var(--sb-hover)] hover:text-[color:var(--sb-fg)]',
 					isCollapsed && 'mx-auto'
 				)}
 			>

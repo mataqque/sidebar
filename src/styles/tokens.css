@@ -17,13 +17,6 @@
 	--sb-radius: 0.5rem;
 	--sb-duration: 300ms;
 
-	/*
-	 * Velo del cajón en pantallas estrechas. Opaco a medias en vez de un negro
-	 * pleno: atenúa la página sin borrarla, que es lo que comunica «esto sigue
-	 * aquí detrás y vuelves con un toque».
-	 */
-	--sb-scrim: rgb(15 23 42 / 0.5);
-
 	/* Superficies */
 	--sb-surface: #ffffff;
 	--sb-border: #f3f4f6;

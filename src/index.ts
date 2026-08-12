@@ -9,10 +9,9 @@ export type { NavigationAdapter, SidebarLinkProps } from './adapters/navigation'
 export { defaultNavigationAdapter } from './adapters/navigation';
 
 // Composición.
-export { SidebarProvider, DEFAULT_MOBILE_BREAKPOINT, type SidebarProviderProps } from './components/sidebarProvider';
+export { SidebarProvider, type SidebarProviderProps } from './components/sidebarProvider';
 export { useSidebar, type SidebarContextValue } from './components/sidebarContext';
 export { Sidebar, type SidebarProps } from './components/sidebar';
-export { SidebarTrigger, type SidebarTriggerProps } from './components/sidebarTrigger';
 export { SidebarHeader, type SidebarHeaderProps } from './components/sidebarHeader';
 export { SidebarMenu, type SidebarMenuProps } from './components/sidebarMenu';
 export { SidebarMenuItem } from './components/sidebarMenuItem';

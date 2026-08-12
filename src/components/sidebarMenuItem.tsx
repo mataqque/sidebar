@@ -28,8 +28,7 @@ export function SidebarMenuItem({ item, isCollapsed, isSubItem = false, onSelect
 
 	const rowClasses = cn(
 		'group/btn group/sidebarlink relative flex w-full items-center gap-3 rounded-[var(--sb-radius)] px-3 py-2.5 transition-colors duration-200',
-		'h-[var(--sb-item-height)]',
-		'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--sb-accent)] focus-visible:ring-offset-0',
+		'h-[var(--sb-item-height)] outline-none',
 		isActive ? 'bg-[var(--sb-active-bg)]' : 'hover:bg-[var(--sb-hover)]',
 		isCollapsed && 'justify-center',
 		isSubItem && 'py-2'

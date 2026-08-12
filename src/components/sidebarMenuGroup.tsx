@@ -71,8 +71,7 @@ export function SidebarMenuGroup({ item, isOpen, onToggle, isCollapsed, hasActiv
 				title={isCollapsed ? item.label : undefined}
 				className={cn(
 					'group/btn relative flex w-full items-center gap-3 rounded-[var(--sb-radius)] px-3 py-2.5 transition-colors duration-200',
-					'h-[var(--sb-item-height)] hover:bg-[var(--sb-hover)]',
-					'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--sb-accent)]',
+					'h-[var(--sb-item-height)] outline-none hover:bg-[var(--sb-hover)]',
 					hasActiveChild && !isOpen && 'bg-[var(--sb-active-bg)]',
 					isCollapsed && 'justify-center'
 				)}
