@@ -1,25 +1,47 @@
 {
 	"name": "@mataqque/sidebar",
-	"version": "0.3.0",
+	"version": "0.4.0",
 	"description": "Sidebar de dashboard para React/Next: menú por contribuciones (core + plugins), colapsable con flyout y theming por tokens CSS.",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/mataqque/sidebar.git"
 	},
-	"keywords": ["react", "nextjs", "sidebar", "dashboard", "tailwind"],
-	"sideEffects": ["*.css"],
-	"files": ["src", "README.md"],
-	"types": "./src/index.ts",
-	"main": "./src/index.ts",
+	"keywords": [
+		"react",
+		"nextjs",
+		"sidebar",
+		"dashboard",
+		"tailwind"
+	],
+	"sideEffects": [
+		"*.css"
+	],
+	"files": [
+		"dist",
+		"README.md"
+	],
+	"types": "./dist/index.d.ts",
+	"main": "./dist/index.js",
 	"exports": {
-		".": "./src/index.ts",
-		"./next": "./src/adapters/next.tsx",
-		"./styles.css": "./src/styles/tokens.css",
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.mjs",
+			"require": "./dist/index.js"
+		},
+		"./next": {
+			"types": "./dist/adapters/next.d.ts",
+			"import": "./dist/adapters/next.mjs",
+			"require": "./dist/adapters/next.js"
+		},
+		"./styles.css": "./dist/styles/tokens.css",
 		"./package.json": "./package.json"
 	},
 	"scripts": {
-		"type-check": "tsc --noEmit"
+		"type-check": "tsc --noEmit",
+		"build": "tsup && tsc -p tsconfig.build.json && node scripts/copyStyles.mjs",
+		"prepare": "yarn build",
+		"dev": "tsup --watch"
 	},
 	"dependencies": {
 		"clsx": "^2.1.1",
@@ -41,6 +63,8 @@
 		"next": "^16.0.10",
 		"react": "^19.2.0",
 		"react-dom": "^19.2.0",
+		"tsup": "^8.5.1",
 		"typescript": "^5"
-	}
+	},
+	"module": "./dist/index.mjs"
 }

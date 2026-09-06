@@ -4,10 +4,10 @@ Sidebar de dashboard para React 18/19. Menú declarativo por **contribuciones** 
 
 ## Instalación
 
-Se distribuye como dependencia git y **se transpila desde el consumidor** (no hay paso de build ni `dist/`).
+Se distribuye como dependencia git y **se publica compilada**: el `prepare` del paquete construye `dist/` durante la instalación, así que llega lista para usar y no hace falta que tu bundler procese TS/JSX de `node_modules`.
 
 ```bash
-npm i "@mataqque/sidebar@github:mataqque/sidebar#v0.3.0"
+npm i "@mataqque/sidebar@github:mataqque/sidebar#v0.4.0"
 ```
 
 ### Desarrollo contra una copia local
@@ -23,27 +23,26 @@ Para volver al tag: `yarn unlink @mataqque/sidebar && yarn install --check-files
 
 > No uses `file:../sidebar-ui`: yarn **copia** la carpeta con su `node_modules` dentro, duplicando React.
 
-### 1. Transpilar el paquete (Next)
+Enlazada, la app resuelve `dist/`, no `src/`, así que deja el build en marcha mientras iteras:
+>
+> ```bash
+> cd ../sidebar-ui && yarn dev    # tsup --watch
+> ```
+>
+> `yarn dev` solo reconstruye el JS. Si cambias tipos o `tokens.css`, un `yarn build` completo.
 
-```ts
-// next.config.ts
-const nextConfig = {
-	transpilePackages: ['@mataqque/sidebar'],
-};
-```
-
-### 2. Incluirlo en el escaneo de Tailwind
+### 1. Incluirlo en el escaneo de Tailwind
 
 Sin esto, las clases de la librería no se generan y el sidebar sale sin estilos.
 
 ```js
 // tailwind.config.js
 module.exports = {
-	content: ['./src/**/*.{ts,tsx}', './node_modules/@mataqque/sidebar/src/**/*.{ts,tsx}'],
+	content: ['./src/**/*.{ts,tsx}', './node_modules/@mataqque/sidebar/dist/**/*.{js,mjs}'],
 };
 ```
 
-### 3. Importar los tokens
+### 2. Importar los tokens
 
 ```ts
 // app/layout.tsx
@@ -259,6 +258,6 @@ interface NavigationAdapter {
 
 ## Notas de diseño
 
-- **Se distribuye como fuente**, no compilada: el consumidor la transpila. Elimina el paso de build, el `prepare` en instalaciones git y la desincronización entre `dist/` y `src/`. A cambio, exige un bundler que procese TS/JSX de `node_modules` (`transpilePackages` en Next).
+- **Se distribuye compilada**: `prepare` construye `dist/` al instalar, así que el consumidor no necesita `transpilePackages` ni un bundler que entienda TS/JSX de `node_modules`, y `dist/` no se versiona (no puede desincronizarse de `src/`). El build es **archivo a archivo** (`bundle: false` en `tsup.config.ts`): los 12 módulos con `"use client"` son el límite servidor/cliente de Next, y bundlear colapsaría esas directivas en la del entrypoint.
 - `buildSidebarMenu`, `activePluginContributions`, `isItemActive` y `findActiveGroupIds` son **puras**: no leen `process.env`, ni globals, ni el router. El entorno y el modelo de roles entran por parámetro.
 - El colapso persistido se aplica **tras el montaje**, nunca en el inicializador de `useState`: leer `localStorage` en render rompe la hidratación.
