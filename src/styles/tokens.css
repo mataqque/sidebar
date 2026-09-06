@@ -10,76 +10,130 @@
  */
 
 :root {
-	/* Geometría */
-	--sb-width: 20rem;
-	--sb-width-collapsed: 4rem;
-	--sb-item-height: 3rem;
+	/* Geometría. La fila es densa a propósito: el sidebar es superficie de
+	   trabajo, no lista táctil, y a 2.5rem entran dos secciones más sin scroll. */
+	--sb-width: 17rem;
+	--sb-width-collapsed: 3.75rem;
+	--sb-item-height: 2.5rem;
+	--sb-subitem-height: 2.25rem;
 	--sb-radius: 0.5rem;
-	--sb-duration: 300ms;
+
+	/* Motion. `duration` mueve geometría (ancho, acordeón); `duration-fast` mueve
+	   color y estado. Separarlas evita que un hover herede los 300ms del panel. */
+	--sb-duration: 260ms;
+	--sb-duration-fast: 130ms;
+	--sb-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+	/* Tipografía. Roles fijos: el sidebar se escanea, no se lee. */
+	--sb-label-size: 0.875rem;
+	--sb-label-weight: 500;
+	--sb-label-weight-active: 600;
+	--sb-section-size: 0.5625rem;
 
 	/* Superficies */
 	--sb-surface: #ffffff;
-	--sb-border: #f3f4f6;
-	--sb-separator: #f3f4f6;
-	--sb-hover: rgb(88 28 135 / 0.05);
+	--sb-border: #e8e8ed;
+	--sb-separator: #ececed;
+	--sb-hover: rgb(236 72 153 / 0.06);
 
-	/* Acento (item activo, indicador lateral) */
-	--sb-accent: #ec4899;
-	--sb-accent-fg: #ec4899;
-	--sb-active-bg: rgb(88 28 135 / 0.05);
+	/* Acento (item activo). El fondo activo es opaco de verdad: a 0.05 de alpha
+	   el estado no sobrevivía al test de entrecerrar los ojos. */
+	--sb-accent: #db2777;
+	--sb-accent-fg: #be185d;
+	--sb-active-bg: rgb(236 72 153 / 0.15);
 
-	/* Texto */
-	--sb-fg: #374151;
-	--sb-fg-muted: #9ca3af;
-	--sb-fg-subtle: #9ca3af;
+	/* Foco de teclado: fondo, no contorno. Neutro a propósito, para no competir
+	   con el acento que ya usa el estado activo. */
+	--sb-focus-bg: rgb(15 18 26 / 0.09);
+
+	/* Texto. `muted` (iconos, chevron) y `subtle` (rótulos de sección) son dos
+	   escalones distintos: si comparten valor la jerarquía se aplana. */
+	--sb-fg: #1f2430;
+	--sb-fg-muted: #6b7280;
+	--sb-fg-subtle: #6e7587;
+
 
 	/* Flyout (grupo abierto en modo colapsado) */
 	--sb-flyout-surface: #ffffff;
 	--sb-flyout-border: #e5e7eb;
-	--sb-flyout-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+	--sb-flyout-shadow: 0 12px 28px -8px rgb(15 18 26 / 0.18), 0 4px 10px -4px rgb(15 18 26 / 0.12);
 
-	/* Badges */
-	--sb-badge-primary: #3b82f6;
-	--sb-badge-danger: #ec4899;
-	--sb-badge-success: #22c55e;
-	--sb-badge-warning: #eab308;
+	/* Badges. Los valores están fijados por el texto que llevan encima: el
+	   contador va a 11px y en semibold, así que cada fondo tiene que sostener
+	   4.5:1 contra el blanco. Ese suelo es el que eligió el tono, no la paleta. */
+	--sb-badge-primary: #2563eb;
+	--sb-badge-danger: #e11d48;
+	--sb-badge-success: #15803d;
+	--sb-badge-warning: #b45309;
 	--sb-badge-neutral: #6b7280;
 	--sb-badge-fg: #ffffff;
 
 	/* Scrollbar propio */
-	--sb-scroll-track: rgb(229 231 235 / 0.5);
-	--sb-scroll-thumb: rgb(156 163 175 / 0.7);
-	--sb-scroll-thumb-active: #6b7280;
+	--sb-scroll-track: transparent;
+	--sb-scroll-thumb: rgb(156 163 175 / 0.45);
+	--sb-scroll-thumb-active: rgb(107 114 128 / 0.8);
+
+	/* Superficies del navegador: selección y caret salen del tema, no del
+	   default del user agent. */
+	--sb-selection-bg: rgb(236 72 153 / 0.22);
+	--sb-selection-fg: var(--sb-fg);
 }
 
 /* Soporta la estrategia de clase (`next-themes` con `attribute="class"`) y la de atributo. */
 .dark,
 [data-theme='dark'] {
-	--sb-surface: #111827;
-	--sb-border: #1f2937;
-	--sb-separator: rgb(255 255 255 / 0.1);
-	--sb-hover: rgb(31 41 55 / 0.5);
+	--sb-surface: #0f1420;
+	--sb-border: rgb(255 255 255 / 0.07);
+	--sb-separator: rgb(255 255 255 / 0.07);
+	--sb-hover: rgb(255 255 255 / 0.055);
 
-	--sb-accent: #ec4899;
-	--sb-accent-fg: #f472b6;
-	--sb-active-bg: rgb(31 41 55 / 0.5);
+	--sb-accent: #f472b6;
+	--sb-accent-fg: #f9a8d4;
+	--sb-active-bg: rgb(244 114 182 / 0.18);
 
-	--sb-fg: #ffffff;
-	--sb-fg-muted: #9ca3af;
-	--sb-fg-subtle: #6b7280;
+	--sb-focus-bg: rgb(255 255 255 / 0.13);
 
-	--sb-flyout-surface: #111827;
-	--sb-flyout-border: #374151;
-	--sb-flyout-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.4);
+	--sb-fg: #eef0f5;
+	--sb-fg-muted: #949cad;
+	--sb-fg-subtle: #7f8798;
 
-	--sb-scroll-track: rgb(55 65 81 / 0.5);
-	--sb-scroll-thumb: rgb(107 114 128 / 0.7);
-	--sb-scroll-thumb-active: #9ca3af;
+
+	--sb-flyout-surface: #161c2b;
+	--sb-flyout-border: rgb(255 255 255 / 0.1);
+	--sb-flyout-shadow: 0 16px 34px -10px rgb(0 0 0 / 0.6), 0 6px 12px -6px rgb(0 0 0 / 0.45);
+
+	--sb-scroll-thumb: rgb(255 255 255 / 0.16);
+	--sb-scroll-thumb-active: rgb(255 255 255 / 0.32);
+
+	--sb-selection-bg: rgb(244 114 182 / 0.28);
+}
+
+/* El `<aside>` marca su subárbol para poder tematizar lo que el navegador dibuja
+   por su cuenta sin filtrarlo al resto de la página del consumidor. */
+[data-sidebar-root] ::selection {
+	background-color: var(--sb-selection-bg);
+	color: var(--sb-selection-fg);
+}
+
+[data-sidebar-root] {
+	caret-color: var(--sb-accent);
+	scrollbar-color: var(--sb-scroll-thumb) transparent;
+}
+
+/* Con el dedo, la fila densa de escritorio se queda corta como diana. El rail es
+   la única cara del sidebar por debajo de `lg`, así que ahí las filas crecen; en
+   ratón se mantiene la densidad. */
+@media (pointer: coarse) {
+	:root {
+		--sb-item-height: 2.75rem;
+		--sb-subitem-height: 2.5rem;
+	}
 }
 
 /* Respeta la preferencia del sistema: sin transiciones para quien pide menos movimiento. */
 @media (prefers-reduced-motion: reduce) {
 	:root {
 		--sb-duration: 0ms;
+		--sb-duration-fast: 0ms;
 	}
 }

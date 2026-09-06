@@ -5,9 +5,14 @@ import { isDivision } from './types';
  * ¿La ruta actual activa este item? Funciones puras sobre strings: no tocan el
  * router, así que el matching se puede testear sin renderizar.
  *
- * `match: 'exact'` (default) compara la ruta completa. `'startsWith'` mantiene el
- * item activo en sub-rutas, comparando por segmentos para que `/dashboard/media`
- * no active `/dashboard/media-library`.
+ * Por defecto un item sigue activo en sus sub-rutas, comparando por segmentos
+ * para que `/dashboard/media` no active `/dashboard/media-library`. Es lo que
+ * espera un dashboard: estando en `/proyecto/cabecera/123` la entrada "Cabecera"
+ * —y el grupo que la contiene— tienen que seguir marcados. `match: 'exact'`
+ * vuelve a la comparación estricta para los casos que la necesiten.
+ *
+ * La raíz (`/`) se excluye del prefijo: si no, sería prefijo de todo y dejaría el
+ * item de inicio permanentemente activo.
  *
  * Negative space: `currentPath === null` (SSR, ruta aún desconocida) nunca activa
  * nada, para que servidor y cliente rindan el mismo HTML.
@@ -15,7 +20,7 @@ import { isDivision } from './types';
 export function isItemActive(item: MenuItem, currentPath: string | null): boolean {
 	if (!item.href || currentPath === null) return false;
 	if (currentPath === item.href) return true;
-	if (item.match !== 'startsWith') return false;
+	if (item.match === 'exact' || item.href === '/') return false;
 	const prefix = item.href.endsWith('/') ? item.href : `${item.href}/`;
 	return currentPath.startsWith(prefix);
 }

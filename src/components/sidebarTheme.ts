@@ -9,8 +9,13 @@ export type SidebarThemeToken =
 	| 'width'
 	| 'widthCollapsed'
 	| 'itemHeight'
+	| 'subItemHeight'
 	| 'radius'
 	| 'duration'
+	| 'durationFast'
+	| 'labelSize'
+	| 'labelWeight'
+	| 'sectionSize'
 	| 'surface'
 	| 'border'
 	| 'separator'
@@ -20,7 +25,8 @@ export type SidebarThemeToken =
 	| 'activeBg'
 	| 'fg'
 	| 'fgMuted'
-	| 'fgSubtle';
+	| 'fgSubtle'
+	| 'focusBg';
 
 export type SidebarTheme = Partial<Record<SidebarThemeToken, string>>;
 
@@ -29,8 +35,13 @@ const TOKEN_VARS: Record<SidebarThemeToken, string> = {
 	width: '--sb-width',
 	widthCollapsed: '--sb-width-collapsed',
 	itemHeight: '--sb-item-height',
+	subItemHeight: '--sb-subitem-height',
 	radius: '--sb-radius',
 	duration: '--sb-duration',
+	durationFast: '--sb-duration-fast',
+	labelSize: '--sb-label-size',
+	labelWeight: '--sb-label-weight',
+	sectionSize: '--sb-section-size',
 	surface: '--sb-surface',
 	border: '--sb-border',
 	separator: '--sb-separator',
@@ -41,6 +52,7 @@ const TOKEN_VARS: Record<SidebarThemeToken, string> = {
 	fg: '--sb-fg',
 	fgMuted: '--sb-fg-muted',
 	fgSubtle: '--sb-fg-subtle',
+	focusBg: '--sb-focus-bg',
 };
 
 /**

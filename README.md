@@ -192,7 +192,43 @@ Todos los estilos leen variables CSS. Tres niveles, de global a local:
 <Sidebar className='shadow-xl' />
 ```
 
-Tokens principales: `--sb-width`, `--sb-width-collapsed`, `--sb-item-height`, `--sb-radius`, `--sb-duration`, `--sb-surface`, `--sb-border`, `--sb-separator`, `--sb-hover`, `--sb-accent`, `--sb-accent-fg`, `--sb-active-bg`, `--sb-fg`, `--sb-fg-muted`, `--sb-fg-subtle`. Modo oscuro vía `.dark` o `[data-theme='dark']`. Lista completa en `src/styles/tokens.css`.
+Tokens principales, por familia:
+
+| Familia | Tokens |
+|---|---|
+| Geometría | `--sb-width`, `--sb-width-collapsed`, `--sb-item-height`, `--sb-subitem-height`, `--sb-radius` |
+| Motion | `--sb-duration` (geometría), `--sb-duration-fast` (color y estado), `--sb-ease` |
+| Tipografía | `--sb-label-size`, `--sb-label-weight`, `--sb-label-weight-active`, `--sb-section-size` |
+| Superficies | `--sb-surface`, `--sb-border`, `--sb-separator`, `--sb-hover` |
+| Estado | `--sb-accent`, `--sb-accent-fg`, `--sb-active-bg`, `--sb-focus-bg` |
+| Texto | `--sb-fg`, `--sb-fg-muted` (iconos), `--sb-fg-subtle` (rótulos de sección) |
+
+Modo oscuro vía `.dark` o `[data-theme='dark']`. Lista completa en `src/styles/tokens.css`.
+
+Dos ajustes automáticos que conviene conocer antes de sobreescribir: bajo `pointer: coarse` las filas crecen a `2.75rem` para ser diana de dedo, y los fondos de badge están fijados para sostener 4.5:1 contra `--sb-badge-fg`, así que cambiar uno pide recomprobar el par.
+
+### Chevron compartido
+
+Los grupos colapsables usan `SidebarChevron`, y está exportado para que un select propio que metas en un slot (tenant, idioma, entorno) use el mismo icono y el mismo giro en vez de uno parecido:
+
+```tsx
+import { SidebarChevron } from '@mataqque/sidebar';
+
+<button onClick={() => setOpen(o => !o)}>
+	<span>{tenant}</span>
+	<SidebarChevron open={open} />
+</button>
+```
+
+Tamaño, grosor de trazo, color y duración salen de los tokens, así que los dos coinciden por construcción y no por copiar valores. Lleva `data-sidebar-chevron="open|closed"` por si quieres engancharte al estado desde CSS.
+
+Si tus selects ya usan otra librería de iconos y prefieres que mande la tuya, va al revés: pásala una vez al provider y todos los grupos la adoptan.
+
+```tsx
+<SidebarProvider chevron={open => <ChevronDown className={cn('h-5 w-5 transition-transform', open && 'rotate-180')} />}>
+```
+
+Recibe el estado abierto/cerrado y devuelve el nodo ya girado o no: el giro pertenece al icono, no al grupo, así que controlas también la duración y la curva.
 
 ## Router
 
@@ -216,8 +252,10 @@ interface NavigationAdapter {
 - `<aside>` y `<nav>` con nombre accesible propio.
 - `aria-current="page"` en el item activo, `aria-expanded` / `aria-controls` en los grupos.
 - Colapsado: el label viaja en `sr-only` + `title`, así el control nunca queda sin nombre.
-- El flyout se cierra con `Escape` y recibe el foco al abrirse.
-- `--sb-duration: 0ms` bajo `prefers-reduced-motion: reduce`.
+- El flyout se cierra con `Escape`, recibe el foco al abrirse y lo devuelve al disparador al cerrarse.
+- Foco de teclado visible (`--sb-focus-bg`) en toda fila, grupo y botón de colapso: las filas llevan `outline-none` y lo reemplazan con un fondo marcado bajo `focus-visible`, nunca lo suprimen sin más. Es fondo y no contorno para no encerrar en un recuadro una fila que, si está activa, ya tiene marca propia.
+- Contraste verificado ≥ 4.5:1 en ambos temas para label, rótulo de sección y texto de badge.
+- `--sb-duration` y `--sb-duration-fast` a `0ms` bajo `prefers-reduced-motion: reduce`, así que ningún hover ni chevron conserva transición propia.
 
 ## Notas de diseño
 

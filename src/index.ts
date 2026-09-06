@@ -22,6 +22,6 @@ export { SidebarBadge } from './components/sidebarBadge';
 export { SidebarScroll, type SidebarScrollProps } from './components/sidebarScroll';
 
 // Primitivos y theming, para que el contenido inyectado en los slots case con el resto.
-export { SIDEBAR_ICON_CLASS, SidebarEyebrow, SidebarSeparator, SidebarText, renderMenuIcon } from './components/primitives';
+export { SIDEBAR_ICON_CLASS, SIDEBAR_FOCUS_CLASS, SIDEBAR_ICON_STROKE, SidebarChevron, SidebarEyebrow, SidebarSeparator, SidebarText, renderMenuIcon } from './components/primitives';
 export { themeToStyle, type SidebarTheme, type SidebarThemeToken } from './components/sidebarTheme';
 export { cn } from './lib/cn';

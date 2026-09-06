@@ -38,6 +38,19 @@ export interface SidebarProviderProps {
 	 * Tailwind por defecto usa 1024; si has redefinido `screens`, pasa el tuyo.
 	 */
 	expandBreakpoint?: number;
+	/**
+	 * Sustituye el chevron de los grupos colapsables por el tuyo.
+	 *
+	 * Existe porque un dashboard ya tiene sus propios selects —tenant, idioma,
+	 * entorno— dibujados con su librería de iconos, y dos flechas parecidas pero
+	 * distintas en el mismo panel se notan. Pasando aquí la misma que usan esos
+	 * selects, el menú deja de tener criterio propio:
+	 *
+	 * ```tsx
+	 * <SidebarProvider chevron={open => <ChevronDown className={cn('h-5 w-5 transition-transform', open && 'rotate-180')} />}>
+	 * ```
+	 */
+	chevron?: (open: boolean) => ReactNode;
 }
 
 /** Lee la preferencia persistida; cualquier fallo (SSR, storage bloqueado) devuelve `null`. */
@@ -70,6 +83,7 @@ export function SidebarProvider({
 	onCollapsedChange,
 	persistKey,
 	expandBreakpoint = DEFAULT_EXPAND_BREAKPOINT,
+	chevron,
 }: SidebarProviderProps) {
 	const isControlled = collapsed !== undefined;
 	const [internalCollapsed, setInternalCollapsed] = useState(defaultCollapsed);
@@ -124,8 +138,8 @@ export function SidebarProvider({
 	}, [currentPath, isControlled, expandBreakpoint]);
 
 	const value = useMemo<SidebarContextValue>(
-		() => ({ isCollapsed, setCollapsed, toggleCollapsed: () => setCollapsed(!isCollapsed), currentPath, navigation }),
-		[isCollapsed, setCollapsed, currentPath, navigation]
+		() => ({ isCollapsed, setCollapsed, toggleCollapsed: () => setCollapsed(!isCollapsed), currentPath, navigation, chevron }),
+		[isCollapsed, setCollapsed, currentPath, navigation, chevron]
 	);
 
 	return <SidebarContextProvider value={value}>{children}</SidebarContextProvider>;

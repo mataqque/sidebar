@@ -27,9 +27,9 @@ export interface MenuItem {
 	/** Sub-items de un grupo colapsable (links hoja), ordenados por `order`. */
 	children?: MenuItem[];
 	/**
-	 * Cómo se compara `href` con la ruta actual. `'exact'` (default) preserva el
-	 * comportamiento clásico; `'startsWith'` mantiene el item activo en sub-rutas
-	 * (`/dashboard/media` sigue activo en `/dashboard/media/123`).
+	 * Cómo se compara `href` con la ruta actual. `'startsWith'` es el **default**:
+	 * el item sigue activo en sus sub-rutas (`/dashboard/media` sigue marcado en
+	 * `/dashboard/media/123`). Usa `'exact'` para exigir la ruta completa.
 	 */
 	match?: MenuMatch;
 	/** Excluye el item del árbol final. Pensado para gating por permiso/feature flag. */

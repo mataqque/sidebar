@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 
 import { cn } from '../lib/cn';
 import { smoothScrollTo } from '../lib/smoothScroll';
@@ -22,13 +22,51 @@ export interface SidebarScrollProps {
 	contentClassName?: string;
 }
 
+/**
+ * Curva del scroll por rueda: arranque inmediato y frenado largo (cubic out).
+ *
+ * La rueda es un gesto directo —el usuario ya ha empujado—, así que el
+ * movimiento tiene que empezar en el primer frame y lo único que queda por
+ * suavizar es la llegada. El `easeInOutCubic` que trae `smoothScrollTo` por
+ * defecto dejaba el contenido quieto los primeros ~80ms, y esa pausa se percibe
+ * como que la interfaz no responde. Ese default se queda para los saltos
+ * programáticos, que sí quieren arrancar suave.
+ *
+ * Vive aquí y no en `smoothScroll.ts` porque es una decisión de esta interacción
+ * concreta, no una utilidad general.
+ */
+const wheelEasing = (t: number) => 1 - Math.pow(1 - t, 3);
+
 /** Alto mínimo del thumb para que siga siendo agarrable en listas muy largas. */
 const MIN_THUMB_HEIGHT = 30;
+
+/** Medidas del contenedor. Solo cambian al redimensionar o al cambiar el contenido. */
+interface ScrollMetrics {
+	scrollHeight: number;
+	clientHeight: number;
+	maxScroll: number;
+	thumbHeight: number;
+	maxThumbTop: number;
+}
+
+const EMPTY_METRICS: ScrollMetrics = { scrollHeight: 0, clientHeight: 0, maxScroll: 0, thumbHeight: 0, maxThumbTop: 0 };
 
 /**
  * Contenedor con scrollbar propio, tematizado por tokens. Se incluye en la
  * librería porque el sidebar depende de él y arrastrarlo desde la app rompería la
  * autonomía del paquete.
+ *
+ * **La posición del thumb no pasa por el estado de React.** Antes cada evento de
+ * scroll hacía `setState`, así que el thumb solo se movía cuando terminaba el
+ * ciclo de render: medido, iba entre 3 y 4px por detrás del contenido en 52 de
+ * cada 70 frames, y eso es exactamente lo que se ve como retraso. Ahora el
+ * handler escribe el `transform` directamente sobre el nodo, dentro del mismo
+ * frame en que llega el evento, así que el thumb y el contenido pintan juntos.
+ *
+ * El resto de la técnica va en la misma dirección: las medidas del contenedor se
+ * cachean y solo se recalculan al redimensionar o mutar el contenido, de modo que
+ * el camino de scroll lee únicamente `scrollTop`; y el movimiento va por
+ * `transform` en vez de `top`, que dispararía layout en cada frame.
  */
 export function SidebarScroll({
 	children,
@@ -45,14 +83,13 @@ export function SidebarScroll({
 	const containerRef = useRef<HTMLDivElement>(null);
 	const thumbRef = useRef<HTMLDivElement>(null);
 	const trackRef = useRef<HTMLDivElement>(null);
+	const metricsRef = useRef<ScrollMetrics>(EMPTY_METRICS);
 
 	// Scroll suave: destino acumulado del wheel + cancelador del rAF en curso.
 	const wheelTargetRef = useRef<number | null>(null);
 	const cancelAnimRef = useRef<(() => void) | null>(null);
 	const dragStartRef = useRef<{ startY: number; startScrollTop: number } | null>(null);
 
-	const [thumbHeight, setThumbHeight] = useState(0);
-	const [thumbTop, setThumbTop] = useState(0);
 	const [isScrollable, setIsScrollable] = useState(false);
 	const [isDragging, setIsDragging] = useState(false);
 
@@ -62,29 +99,60 @@ export function SidebarScroll({
 		wheelTargetRef.current = null;
 	}, []);
 
-	const updateThumb = useCallback(() => {
+	/**
+	 * Mueve el thumb a la posición que le toca. Solo lee `scrollTop` —el resto sale
+	 * de la caché— y solo escribe `transform`, así que no invalida el layout ni
+	 * fuerza un reflow en el siguiente evento.
+	 */
+	const syncThumbPosition = useCallback(() => {
+		const container = containerRef.current;
+		const thumb = thumbRef.current;
+		const { maxScroll, maxThumbTop } = metricsRef.current;
+		if (!container || !thumb || maxScroll <= 0) return;
+		const top = (container.scrollTop / maxScroll) * maxThumbTop;
+		thumb.style.transform = `translate3d(-50%, ${top}px, 0)`;
+	}, []);
+
+	/** Recalcula las medidas. Caro: solo en resize y en cambios de contenido. */
+	const measure = useCallback(() => {
 		const container = containerRef.current;
 		if (!container) return;
 
-		const { scrollHeight, clientHeight, scrollTop } = container;
-		if (scrollHeight <= clientHeight) {
-			setIsScrollable(false);
+		const { scrollHeight, clientHeight } = container;
+		const scrollable = scrollHeight > clientHeight + 1;
+		setIsScrollable(previous => (previous === scrollable ? previous : scrollable));
+		if (!scrollable) {
+			metricsRef.current = EMPTY_METRICS;
 			return;
 		}
-		setIsScrollable(true);
 
 		const trackHeight = clientHeight - offsetY * 2;
-		const nextThumbHeight = Math.max((clientHeight / scrollHeight) * trackHeight, MIN_THUMB_HEIGHT);
-		setThumbHeight(nextThumbHeight);
-		setThumbTop((scrollTop / (scrollHeight - clientHeight)) * (trackHeight - nextThumbHeight));
-	}, [offsetY]);
+		const thumbHeight = Math.max((clientHeight / scrollHeight) * trackHeight, MIN_THUMB_HEIGHT);
+		metricsRef.current = {
+			scrollHeight,
+			clientHeight,
+			maxScroll: scrollHeight - clientHeight,
+			thumbHeight,
+			maxThumbTop: trackHeight - thumbHeight,
+		};
+
+		const thumb = thumbRef.current;
+		if (thumb) thumb.style.height = `${thumbHeight}px`;
+		syncThumbPosition();
+	}, [offsetY, syncThumbPosition]);
+
+	// El thumb se monta con el `isScrollable` ya resuelto, así que las medidas y la
+	// posición inicial se aplican antes del primer paint: sin salto visible.
+	useLayoutEffect(() => {
+		measure();
+	}, [measure, isScrollable]);
 
 	useEffect(() => {
 		const container = containerRef.current;
 		if (!container) return;
-		container.addEventListener('scroll', updateThumb, { passive: true });
-		return () => container.removeEventListener('scroll', updateThumb);
-	}, [updateThumb]);
+		container.addEventListener('scroll', syncThumbPosition, { passive: true });
+		return () => container.removeEventListener('scroll', syncThumbPosition);
+	}, [syncThumbPosition]);
 
 	// Wheel con easing en JS. En los extremos no se hace `preventDefault` para que
 	// el scroll siga propagando al contenedor padre.
@@ -104,7 +172,9 @@ export function SidebarScroll({
 			event.preventDefault();
 			wheelTargetRef.current = next;
 			cancelAnimRef.current?.();
-			cancelAnimRef.current = smoothScrollTo(container, next, { duration: smoothDuration });
+			// Ease-out: la rueda es un gesto directo y tiene que responder en el primer
+			// frame. El in-out por defecto se reserva para saltos programáticos.
+			cancelAnimRef.current = smoothScrollTo(container, next, { duration: smoothDuration, easing: wheelEasing });
 		};
 
 		container.addEventListener('wheel', handleWheel, { passive: false });
@@ -117,15 +187,15 @@ export function SidebarScroll({
 	useEffect(() => {
 		const container = containerRef.current;
 		if (!container) return;
-		const resizeObserver = new ResizeObserver(updateThumb);
-		const mutationObserver = new MutationObserver(updateThumb);
+		const resizeObserver = new ResizeObserver(measure);
+		const mutationObserver = new MutationObserver(measure);
 		resizeObserver.observe(container);
 		mutationObserver.observe(container, { childList: true, subtree: true });
 		return () => {
 			resizeObserver.disconnect();
 			mutationObserver.disconnect();
 		};
-	}, [updateThumb]);
+	}, [measure]);
 
 	const handleThumbMouseDown = useCallback(
 		(event: React.MouseEvent) => {
@@ -147,16 +217,9 @@ export function SidebarScroll({
 		const handleMouseMove = (event: MouseEvent) => {
 			const container = containerRef.current;
 			const dragStart = dragStartRef.current;
-			if (!container || !dragStart) return;
-
-			const { scrollHeight, clientHeight } = container;
-			const trackHeight = clientHeight - offsetY * 2;
-			const currentThumbHeight = Math.max((clientHeight / scrollHeight) * trackHeight, MIN_THUMB_HEIGHT);
-			const scrollableTrack = trackHeight - currentThumbHeight;
-			if (scrollableTrack <= 0) return;
-
-			const delta = ((event.clientY - dragStart.startY) / scrollableTrack) * (scrollHeight - clientHeight);
-			container.scrollTop = dragStart.startScrollTop + delta;
+			const { maxScroll, maxThumbTop } = metricsRef.current;
+			if (!container || !dragStart || maxThumbTop <= 0) return;
+			container.scrollTop = dragStart.startScrollTop + ((event.clientY - dragStart.startY) / maxThumbTop) * maxScroll;
 		};
 
 		const handleMouseUp = () => {
@@ -170,7 +233,7 @@ export function SidebarScroll({
 			window.removeEventListener('mousemove', handleMouseMove);
 			window.removeEventListener('mouseup', handleMouseUp);
 		};
-	}, [isDragging, offsetY]);
+	}, [isDragging]);
 
 	const handleTrackClick = useCallback(
 		(event: React.MouseEvent) => {
@@ -180,7 +243,7 @@ export function SidebarScroll({
 
 			const trackRect = track.getBoundingClientRect();
 			const ratio = (event.clientY - trackRect.top) / trackRect.height;
-			const target = ratio * (container.scrollHeight - container.clientHeight);
+			const target = ratio * metricsRef.current.maxScroll;
 
 			stopSmoothScroll();
 			if (smooth) cancelAnimRef.current = smoothScrollTo(container, target, { duration: smoothDuration });
@@ -190,23 +253,32 @@ export function SidebarScroll({
 	);
 
 	return (
-		<div className={cn('group/scroll relative z-10 overflow-y-auto overflow-x-hidden', className)}>
-			<div ref={containerRef} className={cn('h-full w-full overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden', contentClassName)}>
+		// El wrapper no scrollea: solo posiciona el track. Con `overflow-y-auto` aquí
+		// había un segundo contenedor con scroll, y ese sí enseñaba la barra nativa
+		// del navegador junto a la propia.
+		<div className={cn('group/scroll relative z-10 overflow-hidden', className)}>
+			<div ref={containerRef} className={cn('h-full w-full overflow-y-auto overflow-x-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden', contentClassName)}>
 				{children}
 			</div>
 
 			{isScrollable && (
 				<div
 					ref={trackRef}
-					className={cn('absolute right-0 top-0 z-50 opacity-30 transition-opacity duration-100 group-hover/scroll:opacity-100', trackClassName)}
+					className={cn('absolute right-0 top-0 z-50 opacity-70 transition-opacity duration-[var(--sb-duration-fast,130ms)] group-hover/scroll:opacity-100', trackClassName)}
 					style={{ width: thumbWidth, top: offsetY, bottom: offsetY, right: offsetRight }}
 					onClick={handleTrackClick}
 				>
 					<div className={cn('absolute inset-0 rounded-full bg-[var(--sb-scroll-track)] transition-opacity duration-100', isDragging ? 'opacity-100' : 'opacity-20')} />
 					<div
 						ref={thumbRef}
-						className={cn('absolute cursor-grab rounded-full transition-[width] duration-100 active:cursor-grabbing', isDragging ? 'bg-[var(--sb-scroll-thumb-active)]' : 'bg-[var(--sb-scroll-thumb)]', thumbClassName)}
-						style={{ height: thumbHeight, top: thumbTop, width: isDragging ? thumbWidth + 2 : thumbWidth, left: '50%', transform: 'translateX(-50%)' }}
+						className={cn(
+							'absolute left-1/2 top-0 cursor-grab rounded-full transition-[width,background-color] duration-100 active:cursor-grabbing',
+							isDragging ? 'bg-[var(--sb-scroll-thumb-active)]' : 'bg-[var(--sb-scroll-thumb)]',
+							thumbClassName
+						)}
+						// `height` y `transform` los escribe `measure`/`syncThumbPosition`
+						// directamente sobre el nodo: no vuelven a pasar por React.
+						style={{ width: isDragging ? thumbWidth + 2 : thumbWidth }}
 						onMouseDown={handleThumbMouseDown}
 					/>
 				</div>

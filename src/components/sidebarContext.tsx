@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext } from 'react';
+import { createContext, useContext, type ReactNode } from 'react';
 
 import type { NavigationAdapter } from '../adapters/navigation';
 
@@ -12,6 +12,12 @@ export interface SidebarContextValue {
 	/** Ruta actual resuelta por el adaptador; `null` mientras se desconoce (SSR). */
 	currentPath: string | null;
 	navigation: NavigationAdapter;
+	/**
+	 * Chevron de los grupos colapsables. `undefined` usa el de la librería.
+	 * Recibe el estado abierto/cerrado y devuelve el nodo ya girado o no: la
+	 * animación es cosa del icono, no del grupo.
+	 */
+	chevron?: (open: boolean) => ReactNode;
 }
 
 const SidebarContext = createContext<SidebarContextValue | undefined>(undefined);
