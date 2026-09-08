@@ -70,8 +70,8 @@
 
 	/* Scrollbar propio */
 	--sb-scroll-track: transparent;
-	--sb-scroll-thumb: rgb(156 163 175 / 0.45);
-	--sb-scroll-thumb-active: rgb(107 114 128 / 0.8);
+	--sb-scroll-thumb: rgb(107 114 128 / 0.55);
+	--sb-scroll-thumb-active: rgb(75 85 99 / 0.9);
 
 	/* Superficies del navegador: selección y caret salen del tema, no del
 	   default del user agent. */
@@ -102,8 +102,8 @@
 	--sb-flyout-border: rgb(255 255 255 / 0.1);
 	--sb-flyout-shadow: 0 16px 34px -10px rgb(0 0 0 / 0.6), 0 6px 12px -6px rgb(0 0 0 / 0.45);
 
-	--sb-scroll-thumb: rgb(255 255 255 / 0.16);
-	--sb-scroll-thumb-active: rgb(255 255 255 / 0.32);
+	--sb-scroll-thumb: rgb(255 255 255 / 0.32);
+	--sb-scroll-thumb-active: rgb(255 255 255 / 0.6);
 
 	--sb-selection-bg: rgb(244 114 182 / 0.28);
 }

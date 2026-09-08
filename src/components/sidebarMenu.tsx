@@ -66,7 +66,7 @@ export function SidebarMenu({ items, className, label = 'Navegación principal',
 
 	return (
 		<nav aria-label={label} className={cn('relative z-[1] h-full min-h-0 flex-1 overflow-hidden py-2', className)}>
-			<SidebarScroll className='h-full' thumbWidth={4} offsetRight={0}>
+			<SidebarScroll className='h-full' thumbWidth={6} offsetRight={3}>
 				<ul className='space-y-0.5 px-2'>
 					{items.map(entry =>
 						isDivision(entry) ? (

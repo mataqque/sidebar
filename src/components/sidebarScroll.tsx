@@ -264,7 +264,7 @@ export function SidebarScroll({
 			{isScrollable && (
 				<div
 					ref={trackRef}
-					className={cn('absolute right-0 top-0 z-50 opacity-70 transition-opacity duration-[var(--sb-duration-fast,130ms)] group-hover/scroll:opacity-100', trackClassName)}
+					className={cn('absolute right-0 top-0 z-50 opacity-90 transition-opacity duration-[var(--sb-duration-fast,130ms)] group-hover/scroll:opacity-100', trackClassName)}
 					style={{ width: thumbWidth, top: offsetY, bottom: offsetY, right: offsetRight }}
 					onClick={handleTrackClick}
 				>
